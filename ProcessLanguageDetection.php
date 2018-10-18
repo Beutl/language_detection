@@ -1,6 +1,6 @@
 <?php
 
-set_time_limit(1000);
+set_time_limit(0);
 ob_implicit_flush(true);
 ob_end_flush();
 
@@ -36,6 +36,14 @@ class ProcessLanguageDetection
 								// Check the return value of curl_exec(), too
 								if ($output === false) {
 									throw new Exception(curl_error($ch), curl_errno($ch));
+								} else {
+									if ($output === 'Service Unavailable') {
+										//do sleep here
+										sleep(320);
+
+										//do request again
+										$output = curl_exec($ch);
+									}
 								}
 
 								curl_close($ch);
@@ -45,9 +53,10 @@ class ProcessLanguageDetection
 
 								echo '	Language: ' . $language . '<br>';
 
-								$lineToWrite = $line . ',' . $language;
-								fputcsv($file,explode(',',$lineToWrite));
+								$lineToWrite = '"' . $line . '","' . $language .'"' . PHP_EOL;
+								fwrite($file,$lineToWrite);
 
+								sleep(rand(.5,3));
 							} catch (Exception $e) {
 								echo 'Exception: ' . $e->getMessage();
 							}
